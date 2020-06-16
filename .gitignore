@@ -1,3 +1,6 @@
+# CSV: nobody needs to see my personal library
+*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
