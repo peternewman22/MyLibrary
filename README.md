@@ -9,6 +9,8 @@ A small project to practice interaction with APIs: searching and categorising bo
 * ~~Successfully extract data~~
 * ~~Write function to extract data~~
 * ~~Handle Missing Data~~
+* ~~Improve transparency with logging
+* ~~Handle listed data eg: 'authors' and 'categories'
 * General refactoring
 * Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): partial query
 * Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): compressed query
