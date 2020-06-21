@@ -11,6 +11,11 @@ apiUser = config('USER')
 
 logging.basicConfig(filename = 'mylibrary.log', filemode = 'w', level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
+
+
+
+
+
 def main():
     getDeets("9781316618165")
     # try:
