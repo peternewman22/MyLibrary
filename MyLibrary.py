@@ -25,6 +25,8 @@ class MyLibrary:
             writer.writerow(row)
 
     def run(self):
+        self.write2csv([f"Session started: {datetime.now()}"]) #timestamping session 
+        self.write2csv(self.metadata) # writing headers
         while True:
             gui = Gui(self.apiKey, self.metadata)
             row = self.constructRow(gui.data)
