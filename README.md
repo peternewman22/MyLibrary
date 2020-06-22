@@ -26,13 +26,17 @@ At the moment, uses keyboard interrupt to stop the program. I'm still working on
 * ~~Improve transparency with logging~~
 * ~~Handle listed data eg: 'authors' and 'categories'~~
 * ~~General refactoring~~
-* Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): partial query
-* Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): compressed query
 * ~~GUI design~~
 * ~~Choose output file from GUI~~
 * Detect if the same book has been scanned twice
-* Add persistent GUI window behind: close program
+* Add persistent GUI window behind: close program (?)
 * Pretty up interface
+* Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): partial query
+* Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): compressed query
+
+## Current Bugs
+* Fix issue where each window doesn't automatically focus itself
+* Fix issue where the ISBN isn't saved where api requests are successful
 
 ## Abandoned Approaches
 * Adding additional search parameters (still wasn't bringing up the target books)

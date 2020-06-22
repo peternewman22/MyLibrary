@@ -8,15 +8,14 @@ class Gui:
     def __init__(self, apiKey, metadata, debugOn):
         self.apiKey = apiKey
         self.debugOn = debugOn
-        self.window = sg.Window('Scan a book!',layout= self.createMainLayout(), use_default_focus=False) # focus changed to specify the isbn input
-        self.window.BringToFront() # make sure this is set to focus
+        self.window = sg.Window('Scan a book!',layout= self.createMainLayout()) # focus changed to specify the isbn input
         self.metadata = metadata
         self.data = self.getData()
         self.window.close()
         
     def createMainLayout(self):
         return [
-            [sg.Text('ISBN: '), sg.InputText(key='isbn', focus=True)],
+            [sg.Text('ISBN: '), sg.InputText(key='isbn')],
             [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout(),key='SEARCHFRAME')],
             [sg.Button("Search",key='SEARCH', visible=True),sg.Button('Submit', key='SUBMIT',visible=False),sg.Cancel()]
         ]
