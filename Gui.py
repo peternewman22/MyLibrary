@@ -1,21 +1,22 @@
 import PySimpleGUI as sg
-from Book import Book
 import requests
 from decouple import config
 from collections import defaultdict
 
 class Gui:
     """Handles gathering isbn and, if necessary, additional searches""" 
-    def __init__(self, apiKey, metadata):
+    def __init__(self, apiKey, metadata, debugOn):
         self.apiKey = apiKey
-        self.window = sg.Window('Scan a book!',layout= self.createMainLayout())
+        self.debugOn = debugOn
+        self.window = sg.Window('Scan a book!',layout= self.createMainLayout(), use_default_focus=False) # focus changed to specify the isbn input
+        self.window.BringToFront() # make sure this is set to focus
         self.metadata = metadata
         self.data = self.getData()
         self.window.close()
         
     def createMainLayout(self):
         return [
-            [sg.Text('ISBN: '), sg.InputText(key='ISBN')],
+            [sg.Text('ISBN: '), sg.InputText(key='isbn', focus=True)],
             [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout(),key='SEARCHFRAME')],
             [sg.Button("Search",key='SEARCH', visible=True),sg.Button('Submit', key='SUBMIT',visible=False),sg.Cancel()]
         ]
@@ -56,7 +57,8 @@ class Gui:
         
         while True:
             event, values = self.window.Read(timeout = 1000) # poll the window each second
-            # print(f"event: {event}, values: {values}")
+            if self.debugOn:
+                print(f"event: {event}, values: {values}")
             
             if event in (None, "Cancel"):
                 print("Quitting...")
@@ -65,8 +67,8 @@ class Gui:
             
             elif event == 'SEARCH':
                 print("searching...")
-                r = self.queryAPI(values['ISBN'])
-                d['ISBN'] = values['ISBN'] # Add the isbn into the return data
+                r = self.queryAPI(values['isbn'])
+                d['isbn'] = values['isbn'] # Add the isbn into the return data
 
                 if r['totalItems'] == 1:
                     print("Found exactly 1 match!")
@@ -83,8 +85,6 @@ class Gui:
                     self.window['SEARCH'].update(visible=False) # Hide Search (can't search twice)
                     self.window['SUBMIT'].update(visible=True) # Show submit
                     print("No volumes found. Enter data manually.")
-
-                
 
             elif event == 'SUBMIT': # no validation as yet - any missing data will be filled in
                 for k, v in values.items():

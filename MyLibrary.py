@@ -9,10 +9,10 @@ import PySimpleGUI as sg
 
 class MyLibrary:
     def __init__(self, debugOn):
-        self.debugMode = debugOn
+        self.debugOn = debugOn
         self.filename = sg.popup_get_file('Choose a document to save to')
         self.apiKey = config('KEY')
-        self.metadata = ["ISBN", "title", "subtitle", "authors", "edition", "pageCount", "categories", "averageRating", "ratingsCount", "publishedDate", "publisher", "description"]
+        self.metadata = ["isbn", "title", "subtitle", "authors", "edition", "pageCount", "categories", "averageRating", "ratingsCount", "publishedDate", "publisher", "description"]
 
     def constructRow(self, data):
         """Constructs row in the order of metadat"""
@@ -28,6 +28,6 @@ class MyLibrary:
         self.write2csv([f"Session started: {datetime.now()}"]) #timestamping session 
         self.write2csv(self.metadata) # writing headers
         while True:
-            gui = Gui(self.apiKey, self.metadata)
+            gui = Gui(self.apiKey, self.metadata, self.debugOn)
             row = self.constructRow(gui.data)
             self.write2csv(row)
