@@ -1,7 +1,7 @@
 from MyLibrary import MyLibrary
 
 def main():
-    myLib = MyLibrary()
+    myLib = MyLibrary(debugOn=False)
     myLib.run()
 
 if __name__=='__main__':

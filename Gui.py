@@ -16,8 +16,8 @@ class Gui:
     def createMainLayout(self):
         return [
             [sg.Text('ISBN: '), sg.InputText(key='ISBN')],
-            [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout,key='SEARCHFRAME')],
-            [sg.Button("Search",key='SEARCH', visible=True),sg.Button(key='SUBMIT',visible=False),sg.Cancel()]
+            [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout(),key='SEARCHFRAME')],
+            [sg.Button("Search",key='SEARCH', visible=True),sg.Button('Submit', key='SUBMIT',visible=False),sg.Cancel()]
         ]
     
     def createManualEntryLayout(self):
@@ -29,7 +29,7 @@ class Gui:
             [sg.Text('Authors: '), sg.InputText(key='authors')],
             [sg.Text('Categories: '), sg.InputText(key='categories')],
             [sg.Text('Average Rating: '), sg.InputText(key='averageRating')],
-            [sg.Text('Ratings Count: '), sg.InputText('ratingsCount')],
+            [sg.Text('Ratings Count: '), sg.InputText(key='ratingsCount')],
             [sg.Text('Publisher: '), sg.InputText(key='publisher')],
             [sg.Text('Published Date: '), sg.InputText(key='publishedDate')],
             [sg.Text('Description: '), sg.InputText(key='description')]
@@ -56,7 +56,7 @@ class Gui:
         
         while True:
             event, values = self.window.Read(timeout = 1000) # poll the window each second
-            print(f"event: {event}, values: {values}")
+            # print(f"event: {event}, values: {values}")
             
             if event in (None, "Cancel"):
                 print("Quitting...")
@@ -64,20 +64,27 @@ class Gui:
                 
             
             elif event == 'SEARCH':
+                print("searching...")
                 r = self.queryAPI(values['ISBN'])
-                if r['totalItems'] == 0:
+                d['ISBN'] = values['ISBN'] # Add the isbn into the return data
+
+                if r['totalItems'] == 1:
+                    print("Found exactly 1 match!")
+                    data = r['items'][0]['volumeInfo']
+                    for datapoint in self.metadata:
+                        d[datapoint] = self.extract(datapoint, data)
+                    print("Submitting the following data:")
+                    [print(f"{k} : {v}") for k,v in d.items()]
+                    return d
+
+                else:
+                    "Print found no matches or multiple matches..."
                     self.window['SEARCHFRAME'].update(visible=True)
                     self.window['SEARCH'].update(visible=False) # Hide Search (can't search twice)
                     self.window['SUBMIT'].update(visible=True) # Show submit
                     print("No volumes found. Enter data manually.")
 
-                elif r['totalItems'] == 1:
-                    data = r['items'][0]['volumeInfo']
-                    for datapoint in self.metadata:
-                        d[datapoint] = self.extract(datapoint, data)
-                        print("Submitting the following data:")
-                        [print(f"{k} : {v}") for k,v in d.items()]
-                        return d
+                
 
             elif event == 'SUBMIT': # no validation as yet - any missing data will be filled in
                 for k, v in values.items():

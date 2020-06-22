@@ -8,7 +8,8 @@ import PySimpleGUI as sg
 # logging.basicConfig(filename = 'mylibrary.log', filemode = 'w', level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 class MyLibrary:
-    def __init__(self):
+    def __init__(self, debugOn):
+        self.debugMode = debugOn
         self.filename = sg.popup_get_file('Choose a document to save to')
         self.apiKey = config('KEY')
         self.metadata = ["ISBN", "title", "subtitle", "authors", "edition", "pageCount", "categories", "averageRating", "ratingsCount", "publishedDate", "publisher", "description"]
