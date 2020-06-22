@@ -24,10 +24,12 @@ Saves results to csv.
 * ~~Handle Missing Data~~
 * ~~Improve transparency with logging~~
 * ~~Handle listed data eg: 'authors' and 'categories'~~
-* General refactoring
+* ~~General refactoring~~
 * Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): partial query
 * Implement [efficiency measures](https://developers.google.com/books/docs/v1/performance): compressed query
-* GUI design
+* ~~GUI design~~
+* ~~Choose output file from GUI~~
+* Detect if the same book has been scanned twice
 
 ## Abandoned Approaches
 * Adding additional search parameters (still wasn't bringing up the target books)
@@ -37,6 +39,7 @@ Saves results to csv.
 * Show book data including thumbnail etc with GUI
 * Interact with Goodreads account (?)
 * Data analysis dashboard
+* Visualise data
 
 ## Reflection
 * Requests makes life lovely and simple
