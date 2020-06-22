@@ -2,78 +2,87 @@ import PySimpleGUI as sg
 from Book import Book
 import requests
 from decouple import config
+from collections import defaultdict
 
-# class Gui:
-#     """Handles gathering isbn and, if necessary, additional searches""" 
-#     def __init__(self):
-#         self.window = sg.Window('Scan a book',layout= self.generateLayout)
-#         self.data = 
+class Gui:
+    """Handles gathering isbn and, if necessary, additional searches""" 
+    def __init__(self, apiKey, metadata):
+        self.apiKey = apiKey
+        self.window = sg.Window('Scan a book!',layout= self.createMainLayout())
+        self.metadata = metadata
+        self.data = self.getData()
+        self.window.close()
+        
+    def createMainLayout(self):
+        return [
+            [sg.Text('ISBN: '), sg.InputText(key='ISBN')],
+            [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout,key='SEARCHFRAME')],
+            [sg.Button("Search",key='SEARCH', visible=True),sg.Button(key='SUBMIT',visible=False),sg.Cancel()]
+        ]
     
-#     def generateLayout(self):
-#         return [
-#             [sg.Text('ISBN:'),sg.InputText(key='ISBN',enable_events=True)]
-#         ]
-    
-#     def loop(self):
-#         while True:
-#             event, values = window.Read(timeout = 1000)
+    def createManualEntryLayout(self):
+        return [
+            [sg.Text('Title: '), sg.InputText(key='title')],
+            [sg.Text('Subtitle: '), sg.InputText(key='subtitle')],
+            [sg.Text('Edition: '), sg.InputText(key='edition')],
+            [sg.Text('Page count: '), sg.InputText(key='pageCount')],
+            [sg.Text('Authors: '), sg.InputText(key='authors')],
+            [sg.Text('Categories: '), sg.InputText(key='categories')],
+            [sg.Text('Average Rating: '), sg.InputText(key='averageRating')],
+            [sg.Text('Ratings Count: '), sg.InputText('ratingsCount')],
+            [sg.Text('Publisher: '), sg.InputText(key='publisher')],
+            [sg.Text('Published Date: '), sg.InputText(key='publishedDate')],
+            [sg.Text('Description: '), sg.InputText(key='description')]
+        ]
 
-# titleSearchLayout = [
-#     [sg.Text('Title: '), sg.InputText(key='title')],
-#     [sg.Text('Author: '), sg.InputText(key='author')],
-#     [sg.Listbox([],key='SELECTION',enable_events=True)]
-#     ]
+    def queryAPI(self, isbn):
+        """Queries google books api for isbn using apiKey"""
+        return requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}&key={self.apiKey}').json()
 
-# layout = [
-#     [sg.Text('ISBN: '), sg.InputText(key='ISBN')],
-#     [sg.Frame('Additional Search',visible=False,layout=titleSearchLayout,key='SEARCHFRAME')],
-#     [sg.Button("Search",disabled=True,key='SEARCH'),sg.Cancel()]
-# ]
-
-# window = sg.Window('Enter ISBN',layout)
-# apiKey = config('KEY')
-# isbnSuccess = True
-
-
-# while True:
-#     event, values = window.Read(timeout=1000)
-#     print(f"event: {event}, values: {values}")
-#     if event in (None, "Cancel"):
-#         print("Quitting...")
-#         break
-#     # turning on and off submit
-#     if values['ISBN'] != '':
-#         window['SEARCH'].update(disabled=False)
-#     else:
-#         window['SEARCH'].update(disabled=True)
-
-#     if event == 'SEARCH' and isbnSuccess:
-#         # print(f"isbn: {values['ISBN']}")
-#         r = getData(values['ISBN'])
-#         if r['totalItems'] == 1:
-#             print(r)
-#             break
-#         elif r['totalItems'] == 0:
-#             isbnSuccess = False
-#             window['SEARCHFRAME'].update(visible=True)
-#             print("No volumes found... Try again...")
-    
-#     if event == 'SEARCH' and not isbnSuccess:
-#         r = getData(values['ISBN'])
+    def extract(self, target, data):
+        """If list data, join together. Otherwise, check to see if it exists in the query data"""
+        if target in data:
+            contents = data[target]
+            if type(contents) == list:
+                return ", ".join(contents)
+            else:
+                return contents
+        else :
+            return "Missing Data"
+  
+    def getData(self):
+        """Handles scanning of isbn. If no search results, prompts manual entry."""
+        d = defaultdict(lambda: "Missing Data") # using a default dict will safeguard against errors down the line
+        
+        while True:
+            event, values = self.window.Read(timeout = 1000) # poll the window each second
+            print(f"event: {event}, values: {values}")
             
+            if event in (None, "Cancel"):
+                print("Quitting...")
+                return d
+                
+            
+            elif event == 'SEARCH':
+                r = self.queryAPI(values['ISBN'])
+                if r['totalItems'] == 0:
+                    self.window['SEARCHFRAME'].update(visible=True)
+                    self.window['SEARCH'].update(visible=False) # Hide Search (can't search twice)
+                    self.window['SUBMIT'].update(visible=True) # Show submit
+                    print("No volumes found. Enter data manually.")
 
-# window.close()
-# apiKey = config('KEY')
-# def getData(isbn, **payload):
-#     # return requests.get(f"https://www.googleapis.com/books/v1/volumes?q=isbn+{isbn}&key:{apiKey}",params=payload)
-#     return requests.get(f"https://www.googleapis.com/books/v1/volumes?q=isbn+{isbn}&key:{apiKey}")
+                elif r['totalItems'] == 1:
+                    data = r['items'][0]['volumeInfo']
+                    for datapoint in self.metadata:
+                        d[datapoint] = self.extract(datapoint, data)
+                        print("Submitting the following data:")
+                        [print(f"{k} : {v}") for k,v in d.items()]
+                        return d
 
-# r = getData(isbn='9780140265019',intitle='Oscar Wilde',inauthor='Richard Ellman')
-# print(r.url)
-
-apiKey = config('KEY')
-isbn = "9780140265019"
-title = "Oscar+Wilde"
-author = "Richard+Ellmann"
-r = requests.get(f"https://www.googleapis.com/books/v1/volumes?q=isbn+{isbn}&intitle:{title}&inauthor:{author}&key:{apiKey}")
-print(r.json()['totalItems'])
+            elif event == 'SUBMIT': # no validation as yet - any missing data will be filled in
+                for k, v in values.items():
+                    if v != '':
+                        d[k] = v # grab the values that have been filled in
+                print("Submitting the following data:")
+                [print(f"{k} : {v}") for k,v in d.items()]
+                return d
