@@ -20,8 +20,8 @@ class MyLibrary:
 
     def write2csv(self, row):
         """Writes to csv"""
-        with open(self.filename, 'a', newline='') as csv_file:
-            writer=csv.writer(csv_file, delimiter=',')
+        with open(self.filename, 'a', newline='', encoding='utf8') as csv_file:
+            writer=csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(row)
 
     def run(self):
@@ -29,5 +29,8 @@ class MyLibrary:
         self.write2csv(self.metadata) # writing headers
         while True:
             gui = Gui(self.apiKey, self.metadata, self.debugOn)
-            row = self.constructRow(gui.data)
-            self.write2csv(row)
+            if gui.data['Quit'] == True: # checking to see if Quit thing works
+                break
+            else:
+                row = self.constructRow(gui.data)
+                self.write2csv(row)

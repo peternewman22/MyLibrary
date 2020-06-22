@@ -8,16 +8,16 @@ class Gui:
     def __init__(self, apiKey, metadata, debugOn):
         self.apiKey = apiKey
         self.debugOn = debugOn
-        self.window = sg.Window('Scan a book!',layout= self.createMainLayout()) # focus changed to specify the isbn input
+        self.window = sg.Window('Scan a book!',layout= self.createMainLayout(), finalize=True) # Still not making the window active ??
         self.metadata = metadata
-        self.data = self.getData()
+        self.data = self.getData() # having the first window read here kept the window inactive when called
         self.window.close()
         
     def createMainLayout(self):
         return [
-            [sg.Text('ISBN: '), sg.InputText(key='isbn')],
+            [sg.Text('ISBN: '), sg.InputText(key='isbn',focus=True)],
             [sg.Frame('Additional Search',visible=False,layout=self.createManualEntryLayout(),key='SEARCHFRAME')],
-            [sg.Button("Search",key='SEARCH', visible=True),sg.Button('Submit', key='SUBMIT',visible=False),sg.Cancel()]
+            [sg.Button("Search",key='SEARCH', visible=True),sg.Button('Submit', key='SUBMIT',visible=False),sg.Cancel(),sg.Quit()]
         ]
     
     def createManualEntryLayout(self):
@@ -37,10 +37,16 @@ class Gui:
 
     def queryAPI(self, isbn):
         """Queries google books api for isbn using apiKey"""
-        return requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}&key={self.apiKey}').json()
+        query = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}&key={self.apiKey}') # mnke the query
+        if query.status_code == 200: # Checking for successful query
+            return query.json() # Return
+        else:
+            print("Problem with query") # for debugging
+            return {}
 
     def extract(self, target, data):
         """If list data, join together. Otherwise, check to see if it exists in the query data"""
+        
         if target in data:
             contents = data[target]
             if type(contents) == list:
@@ -59,23 +65,31 @@ class Gui:
             if self.debugOn:
                 print(f"event: {event}, values: {values}")
             
-            if event in (None, "Cancel"):
-                print("Quitting...")
+            if event == "Quit": # pass Quit up to MyLibrary (there's got to be a better way of doing this)
+                d['Quit'] = True
+                print("Ending program")
                 return d
-                
+
+
+            if event in (None, "Cancel"):
+                print("Let's start over shall we...")
+                return d
             
             elif event == 'SEARCH':
                 print("searching...")
                 r = self.queryAPI(values['isbn'])
-                d['isbn'] = values['isbn'] # Add the isbn into the return data
+                
 
                 if r['totalItems'] == 1:
                     print("Found exactly 1 match!")
                     data = r['items'][0]['volumeInfo']
-                    for datapoint in self.metadata:
+                    print(f"Data: {data}")
+                    for datapoint in self.metadata: # Iterate through metadata and extract as relevant
                         d[datapoint] = self.extract(datapoint, data)
+                    d['isbn'] = values['isbn'] # Set the isbn from the scanned value (stored elsewhere in data)
                     print("Submitting the following data:")
                     [print(f"{k} : {v}") for k,v in d.items()]
+                    print("\n")
                     return d
 
                 else:
@@ -91,4 +105,5 @@ class Gui:
                         d[k] = v # grab the values that have been filled in
                 print("Submitting the following data:")
                 [print(f"{k} : {v}") for k,v in d.items()]
+                print("\n")
                 return d
