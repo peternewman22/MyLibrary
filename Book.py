@@ -20,11 +20,14 @@ class Book:
         
         if r['totalItems'] == 0:
             pass # do something
+            return None
 
         elif r['totalItems' == 1]:
             self.success = True
+            return r
 
     def getData(self,**argv):
+        pass
 
         
         
