@@ -1,7 +1,8 @@
 # MyLibrary
 A small project to practice interaction with APIs: searching and categorising books in my personal library using the Google Books API.
 After some experimentation, I decided to use a GUI and categorise books as I go. If the google books search fails (some ISBN's don't return results), then the information can be entered manually as this doesn't happen to often.
-Saves results to csv.
+Saves results to csv but could be integrated with a database.
+At the moment, uses keyboard interrupt to stop the program. I'm still working on how best to use a GUI.
 
 ## Target metadata
 * Title
@@ -30,6 +31,8 @@ Saves results to csv.
 * ~~GUI design~~
 * ~~Choose output file from GUI~~
 * Detect if the same book has been scanned twice
+* Add persistent GUI window behind: close program
+* Pretty up interface
 
 ## Abandoned Approaches
 * Adding additional search parameters (still wasn't bringing up the target books)
